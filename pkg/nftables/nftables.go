@@ -3,7 +3,6 @@ package nftables
 import (
 	"fmt"
 	"github.com/google/nftables"
-	"github.com/google/nftables/expr"
 	"log/slog"
 )
 
@@ -14,24 +13,21 @@ func GetCounter() (map[string]uint64, error) {
 		return nil, err
 	}
 
-	chains, err := c.ListChains()
+	tables, err := c.ListTables()
 	if err != nil {
 		return nil, err
 	}
-
-	for _, chain := range chains {
-		chainName := chain.Name
-		slog.Debug(fmt.Sprintf("Processing chain %s", chainName))
-		rules, err := c.GetRules(chain.Table, chain)
+	for _, table := range tables {
+		slog.Debug(fmt.Sprintf("Processing table %s", table.Name))
+		objs, err := c.GetObjects(table)
 		if err != nil {
-			return nil, err
+			slog.Debug(fmt.Sprintf("Error getting objects for table %s due to %s", table.Name, err))
+			continue
 		}
-		for _, rule := range rules {
-			for _, ex := range rule.Exprs {
-				count, ok := ex.(*expr.Counter)
-				if ok {
-					slog.Debug(fmt.Sprintf("Got count with packages %v and bytes %v", count.Packets, count.Bytes))
-				}
+		for _, obj := range objs {
+			count, ok := obj.(*nftables.CounterObj)
+			if ok {
+				slog.Debug(fmt.Sprintf("Got count %s with packages %v and bytes %v", count.Name, count.Packets, count.Bytes))
 			}
 		}
 	}
