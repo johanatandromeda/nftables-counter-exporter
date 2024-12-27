@@ -14,12 +14,13 @@ way of labeling the metrics for counters without names.
 
 The port and listening address can be set with flags. To see all flags,
 run:
-
 ```shell
 ./nftables-counter-exporter -h
 ```
-
 The default listening address is `:9110`.
+
+The tool only exposes named counters
+https://wiki.nftables.org/wiki-nftables/index.php/Counters
 
 ## Metrics
 
